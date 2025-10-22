@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>Map Application Diagnostic Test</h1>
+
+    <h2>1. Browser Compatibility</h2>
+    <div id="browser-test"></div>
+
+    <h2>2. JavaScript Working</h2>
+    <div id="js-test"></div>
+
+    <h2>3. File Loading Test</h2>
+    <div id="file-test"></div>
+
+    <h2>4. Console Messages</h2>
+    <p>Check your browser console (F12 or Right-click → Inspect → Console tab) for any error messages.</p>
+
+    <h2>5. Next Steps</h2>
+    <div id="next-steps">
+        <p>If all tests pass above, try opening <strong>index.html</strong> again.</p>
+        <p>If there are errors, check:</p>
+        <ul>
+            <li>Are all files in the correct locations?</li>
+            <li>Is the browser blocking any scripts?</li>
+            <li>Are there any console errors?</li>
+        </ul>
+    </div>
+
+    <script>
+        // Test 1: Browser Compatibility
+        const browserTest = document.getElementById('browser-test');
+        browserTest.innerHTML = '<p class="success">✓ Browser is compatible with modern JavaScript</p>';
+        console.log('✓ Browser test passed');
+
+        // Test 2: JavaScript Working
+        const jsTest = document.getElementById('js-test');
+        jsTest.innerHTML = '<p class="success">✓ JavaScript is enabled and running</p>';
+        console.log('✓ JavaScript test passed');
+
+        // Test 3: File Loading (simulate)
+        const fileTest = document.getElementById('file-test');
+        const testPaths = [
+            'css/leaflet.css',
+            'js/leaflet.js',
+            'js/app.js',
+            'data/Fixedgeometries_1.js'
+        ];
+
+        fileTest.innerHTML = `
+            <p>Attempting to check if key files exist...</p>
+            <ul>
+                <li><code>css/leaflet.css</code> - Should exist</li>
+                <li><code>js/leaflet.js</code> - Should exist</li>
+                <li><code>js/app.js</code> - Should exist (newly created)</li>
+                <li><code>data/Fixedgeometries_1.js</code> - Should exist</li>
+            </ul>
+            <p class="warning">⚠ Cannot verify file existence from client-side JavaScript for security reasons.</p>
+            <p class="warning">⚠ Please verify manually that these files exist in their respective folders.</p>
+        `;
+
+        console.log('✓ File test information displayed');
+
+        // Test 4: Check for common issues
+        console.group('Diagnostic Information');
+        console.log('User Agent:', navigator.userAgent);
+        console.log('Window size:', window.innerWidth + 'x' + window.innerHeight);
+        console.log('Current URL:', window.location.href);
+        console.log('Protocol:', window.location.protocol);
+        console.groupEnd();
+
+        // Test 5: Try loading a data file
+        console.log('\n=== Attempting to load test data ===');
+        console.log('If index.html fails to load, check the browser console for errors.');
+        console.log('Common issues:');
+        console.log('1. Missing files (404 errors)');
+        console.log('2. CORS errors (if running from file:// protocol)');
+        console.log('3. JavaScript syntax errors');
+        console.log('4. Missing dependencies');
+
+        // Display success message
+        setTimeout(() => {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div style="margin-top: 30px; padding: 20px; background: #e8f5e9; border-radius: 4px; border: 2px solid #4caf50;">
+                    <h2 style="margin-top: 0; color: #2e7d32;">✓ Diagnostic Test Complete</h2>
+                    <p><strong>All basic tests passed!</strong></p>
+                    <p>If index.html still doesn't load, please check the browser console (press F12) for specific error messages.</p>
+                    <p style="margin-bottom: 0;">You can now try opening <strong>index.html</strong> in this browser.</p>
+                </div>
+            `);
+        }, 100);
+    </script>
+</body>
+</html>

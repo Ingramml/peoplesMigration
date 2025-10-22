@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .map-header {
+            text-align: center;
+            padding: 20px;
+            background: #f8f8f8;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .map-header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .map-header .subtitle {
+            margin: 8px 0 0 0;
+            font-size: 16px;
+            color: #666;
+        }
+
+        #map {
+            width: 100vw;
+            height: calc(100vh - 80px);
+        }
+
+        /* Loading overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0078A8;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-content p {
+            font-size: 16px;
+            color: #444;
+            margin: 0;
+        }
+
+        /* Popup styles */
+        .district-popup {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .stats-container {
+            margin: 10px 0;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-row.highlight {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .stat-row.inflow {
+            background: #e8f5e9;
+            border-left: 3px solid #4caf50;
+        }
+
+        .stat-row.outflow {
+            background: #ffebee;
+            border-left: 3px solid #f44336;
+        }
+
+        .stat-row.balanced {
+            background: #e3f2fd;
+            border-left: 3px solid #2196f3;
+        }
+
+        .stat-row.no-data {
+            background: #f5f5f5;
+            border-left: 3px solid #9e9e9e;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .marker-icon {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .marker-icon.blue {
+            background: rgba(31,69,143,1.0);
+            border: 1px solid rgba(35,35,35,0.5);
+        }
+
+        .marker-icon.green {
+            background: rgba(28,153,10,1.0);
+            border: 1px solid rgba(35,35,35,0.5);
+        }
+
+        .rep-info {
+            margin-top: 10px;
+        }
+
+        /* Legend styles */
+        .map-legend {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .map-legend h4 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #333;
+            border-bottom: 2px solid #0078A8;
+            padding-bottom: 6px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 14px;
+            color: #444;
+        }
+
+        .legend-item span:last-child {
+            margin-left: 8px;
+        }
+
+        .marker-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .marker-dot.blue {
+            background: rgba(31,69,143,1.0);
+            border: 1px solid rgba(35,35,35,0.5);
+        }
+
+        .marker-dot.green {
+            background: rgba(28,153,10,1.0);
+            border: 1px solid rgba(35,35,35,0.5);
+        }
+
+        .line-sample, .polygon-sample {
+            flex-shrink: 0;
+        }
+
+        /* Tablet adjustments */
+        @media (max-width: 1024px) {
+            #map {
+                height: calc(100vh - 70px);
+            }
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .map-header h1 {
+                font-size: 18px;
+                padding: 10px;
+            }
+
+            .map-header .subtitle {
+                font-size: 13px;
+            }
+
+            #map {
+                height: calc(100vh - 90px);
+            }
+
+            .col3 {
+                position: absolute;
+                top: 90px;
+                right: 10px;
+                width: 200px;
+                max-height: 250px;
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 4px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+                z-index: 1000;
+            }
+
+            .col9 {
+                width: 100% !important;
+            }
+
+            .leaflet-popup-content {
+                max-width: 250px !important;
+                font-size: 13px;
+            }
+
+            .district-popup h3 {
+                font-size: 16px;
+            }
+
+            .stat-value {
+                font-size: 14px !important;
+            }
+
+            .map-legend {
+                padding: 8px 10px;
+                font-size: 12px;
+            }
+
+            .map-legend h4 {
+                font-size: 14px;
+                margin-bottom: 6px;
+            }
+
+            .legend-item {
+                padding: 4px 0;
+                font-size: 12px;
+            }
+
+            .marker-dot {
+                width: 10px;
+                height: 10px;
+            }
+        }
+
+        /* Small mobile phones */
+        @media (max-width: 480px) {
+            .map-header h1 {
+                font-size: 16px;
+            }
+
+            .col3 {
+                width: 180px;
+                max-height: 200px;
+                font-size: 12px;
+            }
+
+            .leaflet-popup-content {
+                max-width: 200px !important;
+                font-size: 12px;
+            }
+        }
+        </style>
+        <title>Population Movement Map - Phoenix City Council Districts</title>
+    </head>
+    <body>
+        <header class="map-header">
+            <h1>Population Movement: Determining Activities vs Living Location</h1>
+            <p class="subtitle">Phoenix City Council Districts - Registration vs Residence Analysis</p>
+        </header>
+        <div id="map">
+        </div>
+        <div id="loading-overlay">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>Loading map data...</p>
+            </div>
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="js/leaflet.polylineDecorator.min.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/Fixedgeometries_1.js"></script>
+        <script src="data/Lineayer_23_2.js"></script>
+        <script src="data/Lineayer_Living_3.js"></script>
+        <script src="data/Lineayer_regloc_4.js"></script>
+        <script src="js/app.js"></script>
+        <script>
+        // Initialize counts IMMEDIATELY after data and app.js are loaded
+        console.log('=== INITIALIZING COUNTS EARLY ===');
+        if (typeof window.initializeCounts === 'function') {
+            window.initializeCounts();
+            console.log('Early initialization complete');
+            console.log('Counts after early init - registrationCounts:', window.registrationCounts);
+            console.log('Counts after early init - residentCounts:', window.residentCounts);
+        } else {
+            console.error('window.initializeCounts not available!');
+        }
+
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[33.64677106380835,-113.18683147788256],[34.02334708951505,-112.30144851260519]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // modify popup if contains media
+        function addClassToPopupIfMedia(content, popup) {
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            var imgTd = tempDiv.querySelector('td img');
+            if (imgTd) {
+                var src = imgTd.getAttribute('src');
+                if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
+                    var audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = src;
+                    imgTd.parentNode.replaceChild(audio, imgTd);
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp4|webm|ogg|mov)$/i.test(src)) {
+                    var video = document.createElement('video');
+                    video.controls = true;
+                    video.src = src;
+                    video.style.width = "400px";
+                    video.style.height = "300px";
+                    video.style.maxHeight = "60vh";
+                    video.style.maxWidth = "60vw";
+                    imgTd.parentNode.replaceChild(video, imgTd);
+                    popup._contentNode.classList.add('media');
+                    // Aggiorna il popup quando il video carica i metadati
+                    video.addEventListener('loadedmetadata', function() {
+                        popup.update();
+                    });
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else {
+                    popup._contentNode.classList.remove('media');
+                }
+            } else {
+                popup._contentNode.classList.remove('media');
+            }
+        }
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_GoogleMaps_0');
+        map.getPane('pane_GoogleMaps_0').style.zIndex = 400;
+        var layer_GoogleMaps_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleMaps_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        layer_GoogleMaps_0;
+        map.addLayer(layer_GoogleMaps_0);
+        function pop_Fixedgeometries_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+
+            var district = feature.properties.district || 'N/A';
+
+            var activityPoints = window.getRegistrationCount(district);
+            var residentialPoints = window.getResidentCount(district);
+            var total = activityPoints + residentialPoints;
+
+            // Determine movement pattern
+            var movementInsight = '';
+            var movementClass = '';
+            if (activityPoints > 0 && residentialPoints === 0) {
+                movementInsight = 'Activity Destination - People come here from other districts to complete surveys';
+                movementClass = 'activity-hub';
+            } else if (residentialPoints > 0 && activityPoints === 0) {
+                movementInsight = 'Residential Area - Residents travel to other districts for activities';
+                movementClass = 'residential';
+            } else if (activityPoints > 0 && residentialPoints > 0) {
+                if (activityPoints > residentialPoints) {
+                    movementInsight = 'Activity Hub - More people come here for activities than live here';
+                    movementClass = 'activity-hub';
+                } else if (residentialPoints > activityPoints) {
+                    movementInsight = 'Residential Focus - More residents than activity visitors';
+                    movementClass = 'residential';
+                } else {
+                    movementInsight = 'Balanced - Equal activity and residential presence';
+                    movementClass = 'balanced';
+                }
+            } else {
+                movementInsight = 'No Data - No survey responses or residents recorded';
+                movementClass = 'no-data';
+            }
+
+            var popupContent = '<div class="district-popup">\
+                <h3 style="margin: 0 0 10px 0; color: #333; border-bottom: 2px solid #0078A8; padding-bottom: 8px;">\
+                    District ' + district + '\
+                </h3>\
+                <div class="stats-container">\
+                    <div class="stat-row">\
+                        <span class="stat-label">\
+                            <span class="marker-icon green"></span>\
+                            Survey Activity Points:\
+                        </span>\
+                        <span class="stat-value">' + activityPoints + '</span>\
+                    </div>\
+                    <div class="stat-description" style="font-size: 0.85em; color: #666; margin: -4px 0 8px 20px;">\
+                        Surveys completed in this district\
+                    </div>\
+                    <div class="stat-row">\
+                        <span class="stat-label">\
+                            <span class="marker-icon blue"></span>\
+                            Residential Points:\
+                        </span>\
+                        <span class="stat-value">' + residentialPoints + '</span>\
+                    </div>\
+                    <div class="stat-description" style="font-size: 0.85em; color: #666; margin: -4px 0 12px 20px;">\
+                        People who live in this district\
+                    </div>\
+                    <div class="movement-insight ' + movementClass + '" style="background: #f0f8ff; padding: 10px; border-radius: 4px; border-left: 4px solid #0078A8; margin: 10px 0;">\
+                        <div style="font-weight: 600; color: #0078A8; margin-bottom: 4px;">Movement Pattern:</div>\
+                        <div style="font-size: 0.9em; color: #333;">' + movementInsight + '</div>\
+                    </div>\
+                </div>\
+                <hr style="margin: 12px 0; border: none; border-top: 1px solid #ddd;">\
+                <div class="rep-info">\
+                    <p style="margin: 5px 0; font-weight: 600; color: #333;">\
+                        ' + (feature.properties.rep_name || 'Representative information not available') + '\
+                    </p>\
+                    ' + (feature.properties.rep_url ? '<a href="' + feature.properties.rep_url + '" target="_blank" style="color: #0078A8; text-decoration: none;">Contact Representative →</a>' : '') + '\
+                </div>\
+            </div>';
+
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(popupContent, e.popup);
+			});
+			layer.bindPopup(popupContent, { maxHeight: 400, maxWidth: 350 });
+        }
+
+        function style_Fixedgeometries_1_0() {
+            return {
+                pane: 'pane_Fixedgeometries_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0, 
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Fixedgeometries_1');
+        map.getPane('pane_Fixedgeometries_1').style.zIndex = 401;
+        map.getPane('pane_Fixedgeometries_1').style['mix-blend-mode'] = 'normal';
+        var layer_Fixedgeometries_1 = new L.geoJson(json_Fixedgeometries_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Fixedgeometries_1',
+            layerName: 'layer_Fixedgeometries_1',
+            pane: 'pane_Fixedgeometries_1',
+            onEachFeature: pop_Fixedgeometries_1,
+            style: style_Fixedgeometries_1_0,
+        });
+        bounds_group.addLayer(layer_Fixedgeometries_1);
+        map.addLayer(layer_Fixedgeometries_1);
+        function pop_Lineayer_23_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+
+            var popupContent = '<div class="line-popup">\
+                <h4 style="margin: 0 0 8px 0;">Movement Connection</h4>\
+                <p style="margin: 5px 0;">\
+                    <strong>From:</strong> District ' + (feature.properties.from_district || 'N/A') + '\
+                </p>\
+                <p style="margin: 5px 0;">\
+                    <strong>To:</strong> District ' + (feature.properties.to_district || 'N/A') + '\
+                </p>\
+                ' + (feature.properties.count ? '<p style="margin: 5px 0;"><strong>Count:</strong> ' + feature.properties.count + '</p>' : '') + '\
+            </div>';
+
+			layer.bindPopup(popupContent, { maxHeight: 300 });
+        }
+
+        // Create SVG arrow marker definition
+        var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        svg.setAttribute('style', 'position: absolute; width: 0; height: 0;');
+
+        var defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        var marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+        marker.setAttribute('id', 'arrowhead');
+        marker.setAttribute('markerWidth', '6');
+        marker.setAttribute('markerHeight', '6');
+        marker.setAttribute('refX', '5');
+        marker.setAttribute('refY', '2');
+        marker.setAttribute('orient', 'auto');
+        marker.setAttribute('markerUnits', 'strokeWidth');
+
+        var polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        polygon.setAttribute('points', '0 0, 6 2, 0 4');
+        polygon.setAttribute('fill', '#000000');
+
+        marker.appendChild(polygon);
+        defs.appendChild(marker);
+        svg.appendChild(defs);
+        document.body.appendChild(svg);
+
+        function style_Lineayer_23_2_0(feature) {
+            return {
+                pane: 'pane_Lineayer_23_2',
+                interactive: true,
+                color: '#000000',
+                weight: 1.5,
+                opacity: 1,
+            }
+        }
+
+        // Custom onEachFeature to add arrow styling
+        function onEachFeature_Lineayer_23_2(feature, layer) {
+            // Add popup
+            pop_Lineayer_23_2(feature, layer);
+
+            // Add arrow marker to the path
+            layer.on('add', function() {
+                var path = layer._path;
+                if (path) {
+                    path.setAttribute('marker-end', 'url(#arrowhead)');
+                    path.setAttribute('marker-mid', 'url(#arrowhead)');
+                }
+            });
+        }
+
+        map.createPane('pane_Lineayer_23_2');
+        map.getPane('pane_Lineayer_23_2').style.zIndex = 402;
+        map.getPane('pane_Lineayer_23_2').style['mix-blend-mode'] = 'normal';
+        var layer_Lineayer_23_2 = new L.geoJson(json_Lineayer_23_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Lineayer_23_2',
+            layerName: 'layer_Lineayer_23_2',
+            pane: 'pane_Lineayer_23_2',
+            onEachFeature: onEachFeature_Lineayer_23_2,
+            style: style_Lineayer_23_2_0,
+        });
+        bounds_group.addLayer(layer_Lineayer_23_2);
+        map.addLayer(layer_Lineayer_23_2);
+
+        console.log('Lines with SVG arrow markers added');
+        function pop_Lineayer_Living_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+
+            var popupContent = '<div class="point-popup">\
+                <h4 style="margin: 0 0 8px 0; color: #1F458F;">\
+                    <span class="marker-icon blue"></span>\
+                    Living Location\
+                </h4>\
+                <p style="margin: 5px 0;">\
+                    <strong>District:</strong> ' + (feature.properties.district || 'N/A') + '\
+                </p>\
+                ' + (feature.properties.rep_name ? '<p style="margin: 5px 0;"><strong>Representative:</strong> ' + feature.properties.rep_name + '</p>' : '') + '\
+            </div>';
+
+			layer.bindPopup(popupContent, { maxHeight: 300 });
+        }
+
+        function style_Lineayer_Living_3_0() {
+            return {
+                pane: 'pane_Lineayer_Living_3',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(31,69,143,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Lineayer_Living_3');
+        map.getPane('pane_Lineayer_Living_3').style.zIndex = 403;
+        map.getPane('pane_Lineayer_Living_3').style['mix-blend-mode'] = 'normal';
+        var layer_Lineayer_Living_3 = new L.geoJson(json_Lineayer_Living_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Lineayer_Living_3',
+            layerName: 'layer_Lineayer_Living_3',
+            pane: 'pane_Lineayer_Living_3',
+            onEachFeature: pop_Lineayer_Living_3,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Lineayer_Living_3_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Lineayer_Living_3);
+        map.addLayer(layer_Lineayer_Living_3);
+        function pop_Lineayer_regloc_4(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+
+            var popupContent = '<div class="point-popup">\
+                <h4 style="margin: 0 0 8px 0; color: #1C990A;">\
+                    <span class="marker-icon green"></span>\
+                    Registration Location\
+                </h4>\
+                <p style="margin: 5px 0;">\
+                    <strong>District:</strong> ' + (feature.properties.district || 'N/A') + '\
+                </p>\
+                ' + (feature.properties.rep_name ? '<p style="margin: 5px 0;"><strong>Representative:</strong> ' + feature.properties.rep_name + '</p>' : '') + '\
+            </div>';
+
+			layer.bindPopup(popupContent, { maxHeight: 300 });
+        }
+
+        function style_Lineayer_regloc_4_0() {
+            return {
+                pane: 'pane_Lineayer_regloc_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(28,153,10,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Lineayer_regloc_4');
+        map.getPane('pane_Lineayer_regloc_4').style.zIndex = 404;
+        map.getPane('pane_Lineayer_regloc_4').style['mix-blend-mode'] = 'normal';
+        var layer_Lineayer_regloc_4 = new L.geoJson(json_Lineayer_regloc_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Lineayer_regloc_4',
+            layerName: 'layer_Lineayer_regloc_4',
+            pane: 'pane_Lineayer_regloc_4',
+            onEachFeature: pop_Lineayer_regloc_4,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_Lineayer_regloc_4_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_Lineayer_regloc_4);
+        map.addLayer(layer_Lineayer_regloc_4);
+        setBounds();
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+
+        // Initialize app functions
+        console.log('About to call initializeCounts()');
+        console.log('typeof initializeCounts:', typeof initializeCounts);
+        console.log('typeof window.initializeCounts:', typeof window.initializeCounts);
+        console.log('json_Lineayer_regloc_4 exists?', typeof json_Lineayer_regloc_4 !== 'undefined');
+        console.log('json_Lineayer_Living_3 exists?', typeof json_Lineayer_Living_3 !== 'undefined');
+
+        if (typeof window.initializeCounts === 'function') {
+            window.initializeCounts();
+        } else {
+            console.error('window.initializeCounts is not a function!');
+        }
+
+        // Add layer control
+        var baseLayers = {
+            "Google Maps": layer_GoogleMaps_0
+        };
+
+        var overlayLayers = {
+            "District Boundaries": layer_Fixedgeometries_1,
+            "Movement Connections": layer_Lineayer_23_2,
+            "Living Locations (Blue)": layer_Lineayer_Living_3,
+            "Registration Locations (Green)": layer_Lineayer_regloc_4
+        };
+
+        var layerControl = L.control.layers(baseLayers, overlayLayers, {
+            position: 'topright',
+            collapsed: window.innerWidth < 768
+        }).addTo(map);
+
+        // Add legend
+        if (typeof window.addLegend === 'function') {
+            window.addLegend(map);
+        } else {
+            console.error('window.addLegend is not a function!');
+        }
+
+        // Hide loading overlay when map is ready
+        map.whenReady(function() {
+            if (typeof window.hideLoadingOverlay === 'function') {
+                window.hideLoadingOverlay();
+            } else {
+                console.error('window.hideLoadingOverlay is not a function!');
+            }
+        });
+        </script>
+    </body>
+</html>
