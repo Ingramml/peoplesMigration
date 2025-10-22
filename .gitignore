@@ -53,4 +53,7 @@ yarn-error.log*
 .env.production.local
 
 .claude
-*/Claude_files
+.claude/
+Claude_files/
+Session_Archives/
+
