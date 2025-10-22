@@ -4,7 +4,7 @@ An interactive web map visualizing population movement patterns across Phoenix C
 
 ## 🗺️ Live Demo
 
-[View Live Map](https://YOUR-USERNAME.github.io/YOUR-REPO-NAME/)
+[View Live Map](https://ingramml.github.io/peoplesMigration/)
 
 ## 📊 Overview
 
