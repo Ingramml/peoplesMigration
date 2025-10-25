@@ -281,41 +281,12 @@
                 display: none !important;
             }
 
-            /* Hide attribution control on mobile */
-            .leaflet-control-attribution {
-                display: none !important;
-            }
+            /* Stack controls on mobile: layers > legend > attribution */
 
-            /* Hide all bottom-left controls on mobile */
-            .leaflet-bottom.leaflet-left {
-                display: none !important;
-            }
-
-            /* Position Leaflet legend at bottom center on mobile */
-            .leaflet-bottom.leaflet-right {
-                bottom: 10px !important;
-                left: 50% !important;
-                right: auto !important;
-                transform: translateX(-50%);
-                width: 90%;
-                max-width: 400px;
-                background: transparent !important;
-            }
-
-            .map-legend {
-                margin: 0 auto !important;
-                width: 100% !important;
-                max-width: 400px !important;
-                background: rgba(255, 255, 255, 0.98) !important;
-                border-radius: 8px !important;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
-                padding: 12px 16px !important;
-            }
-
-            /* Move Leaflet layer control higher up on mobile */
+            /* Position layer control at bottom right */
             .leaflet-top.leaflet-right {
                 top: auto !important;
-                bottom: 160px;
+                bottom: 200px;
                 right: 10px;
             }
 
@@ -323,11 +294,69 @@
                 background: rgba(255, 255, 255, 0.98) !important;
                 border-radius: 8px !important;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+                margin-bottom: 8px !important;
             }
 
             .leaflet-control-layers-expanded {
-                max-height: 300px;
+                max-height: 200px;
                 overflow-y: auto;
+            }
+
+            /* Position legend below layer control at bottom right */
+            .leaflet-bottom.leaflet-right {
+                bottom: 50px !important;
+                right: 10px !important;
+                left: auto !important;
+                transform: none;
+                width: auto;
+                max-width: 250px;
+                background: transparent !important;
+            }
+
+            .map-legend {
+                margin: 0 !important;
+                width: 100% !important;
+                background: rgba(255, 255, 255, 0.98) !important;
+                border-radius: 8px !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+                padding: 10px 12px !important;
+                font-size: 12px !important;
+                margin-bottom: 8px !important;
+            }
+
+            .map-legend h4 {
+                font-size: 13px !important;
+                margin-bottom: 6px !important;
+            }
+
+            .legend-item {
+                font-size: 11px !important;
+                padding: 4px 0 !important;
+            }
+
+            /* Show attribution at bottom right, below legend */
+            .leaflet-control-attribution {
+                display: block !important;
+                background: rgba(255, 255, 255, 0.95) !important;
+                border-radius: 6px !important;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+                padding: 4px 8px !important;
+                font-size: 10px !important;
+                margin: 0 !important;
+                max-width: 250px;
+                text-align: center;
+            }
+
+            .leaflet-bottom.leaflet-left {
+                display: none !important;
+            }
+
+            /* Move attribution from bottom-left to bottom-right */
+            .leaflet-control-attribution {
+                position: fixed !important;
+                bottom: 5px !important;
+                right: 10px !important;
+                left: auto !important;
             }
 
             /* Improve popup touch targets and readability */
@@ -430,18 +459,33 @@
 
             /* .col3 already hidden by previous rule */
 
+            /* Adjust spacing for smaller screens */
+            .leaflet-top.leaflet-right {
+                bottom: 180px;
+            }
+
             .leaflet-bottom.leaflet-right {
-                bottom: 8px !important;
-                width: 95%;
-                max-width: 360px;
+                bottom: 40px !important;
+                max-width: 220px;
             }
 
             .map-legend {
-                padding: 10px 14px !important;
+                padding: 8px 10px !important;
+                font-size: 11px !important;
             }
 
-            .leaflet-top.leaflet-right {
-                bottom: 140px;
+            .map-legend h4 {
+                font-size: 12px !important;
+            }
+
+            .legend-item {
+                font-size: 10px !important;
+            }
+
+            .leaflet-control-attribution {
+                font-size: 9px !important;
+                padding: 3px 6px !important;
+                max-width: 220px;
             }
 
             .leaflet-popup-content {
