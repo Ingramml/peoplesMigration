@@ -238,8 +238,17 @@
 
         /* Mobile adjustments */
         @media (max-width: 768px) {
+            body {
+                padding-top: 0;
+                margin: 0;
+            }
+
             .map-header {
                 padding: 12px 15px;
+                position: relative;
+                z-index: 2000;
+                display: block !important;
+                width: 100%;
             }
 
             .map-header h1 {
@@ -254,15 +263,22 @@
 
             #map {
                 height: calc(100vh - 80px);
+                position: relative;
+                z-index: 1;
             }
 
             /* Hide empty .col3 menu div on mobile */
-            .col3 {
+            .col3, #menu {
                 display: none !important;
             }
 
             .col9 {
                 width: 100% !important;
+            }
+
+            /* Hide any empty leaflet control containers */
+            .leaflet-control-container > div:empty {
+                display: none !important;
             }
 
             /* Position Leaflet legend at bottom center on mobile */
