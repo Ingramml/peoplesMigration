@@ -239,16 +239,21 @@
         /* Mobile adjustments */
         @media (max-width: 768px) {
             body {
-                padding-top: 0;
+                padding-top: 70px;
                 margin: 0;
             }
 
             .map-header {
                 padding: 12px 15px;
-                position: relative;
-                z-index: 2000;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 10000;
                 display: block !important;
                 width: 100%;
+                background: #f8f8f8;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
 
             .map-header h1 {
@@ -262,9 +267,10 @@
             }
 
             #map {
-                height: calc(100vh - 80px);
+                height: calc(100vh - 70px);
                 position: relative;
                 z-index: 1;
+                margin-top: 0;
             }
 
             /* Hide empty .col3 menu div on mobile */
@@ -439,6 +445,10 @@
 
         /* Extra small mobile devices */
         @media (max-width: 480px) {
+            body {
+                padding-top: 60px;
+            }
+
             .map-header {
                 padding: 10px 12px;
             }
@@ -453,7 +463,7 @@
             }
 
             #map {
-                height: calc(100vh - 70px);
+                height: calc(100vh - 60px);
             }
 
             /* .col3 already hidden by previous rule */
