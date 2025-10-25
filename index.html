@@ -281,6 +281,16 @@
                 display: none !important;
             }
 
+            /* Hide attribution control on mobile */
+            .leaflet-control-attribution {
+                display: none !important;
+            }
+
+            /* Hide all bottom-left controls on mobile */
+            .leaflet-bottom.leaflet-left {
+                display: none !important;
+            }
+
             /* Position Leaflet legend at bottom center on mobile */
             .leaflet-bottom.leaflet-right {
                 bottom: 10px !important;
@@ -289,6 +299,7 @@
                 transform: translateX(-50%);
                 width: 90%;
                 max-width: 400px;
+                background: transparent !important;
             }
 
             .map-legend {
